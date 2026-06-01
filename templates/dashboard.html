@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Search OS — Applications</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
+    --text:#e7e9ee; --muted:#9aa3b2; --accent:#6ea8fe; --accent2:#3a7bff;
+    --good:#4ec27e; --warn:#e0b23c; --bad:#e0685f; --chip:#222733;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;font-size:15px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 22px 80px}
+  header h1{margin:0 0 4px;font-size:24px;letter-spacing:.2px}
+  header p{margin:0;color:var(--muted)}
+  .bar{position:sticky;top:0;z-index:5;background:rgba(15,17,21,.92);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:18px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--chip);border:1px solid var(--line);border-radius:8px;
+    padding:6px 10px;font-size:13px;display:flex;align-items:center;gap:8px}
+  .chip b{color:var(--text);font-weight:600}
+  .chip span{color:var(--muted)}
+  button.copy{background:var(--accent2);color:#fff;border:0;border-radius:6px;
+    padding:3px 9px;font-size:12px;cursor:pointer;white-space:nowrap}
+  button.copy:hover{background:#2f6ae0}
+  button.copy.ok{background:var(--good)}
+  .legend{color:var(--muted);font-size:13px;margin:6px 0 18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px 18px 6px;margin-bottom:18px}
+  .card-top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  .card-top h2{margin:0;font-size:18px}
+  .role{color:var(--muted);font-size:14px;margin-top:2px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .badge{font-size:12px;border-radius:20px;padding:2px 10px;border:1px solid var(--line);background:var(--panel2)}
+  .badge.good{color:var(--good);border-color:#27583f}
+  .badge.warn{color:var(--warn);border-color:#5a4a1d}
+  .badge.bad{color:var(--bad);border-color:#5a2c28}
+  .actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+  .btn{display:inline-block;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;border:1px solid var(--line)}
+  .btn.apply{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+  .btn.apply:hover{background:#2f6ae0;text-decoration:none}
+  .btn.resume{background:transparent;color:var(--text)}
+  .btn.resume:hover{border-color:var(--accent);text-decoration:none}
+  .field{border-top:1px solid var(--line);padding:12px 0}
+  .field-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+  .label{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+  .copytext{white-space:pre-wrap}
+  ul.cons{margin:6px 0 0;padding-left:18px}
+  ul.cons li{margin-bottom:4px}
+  .framing{font-size:13px;color:var(--muted);padding:10px 0 4px}
+  details summary{cursor:pointer;color:var(--accent);font-size:13px;padding:8px 0}
+  .foot{color:var(--muted);font-size:13px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Job Search OS — Applications</h1>
+    <p>Tailored resumes, ready to submit. Apply links, copy-paste fields, and per-role considerations. Re-check each posting is still live before applying.</p>
+  </header>
+
+  <div class="bar">
+    <div class="chips" id="globals"></div>
+  </div>
+  <div class="legend">
+    Green badge = clean fit (apply with confidence). Amber = worth a shot, ideally with a referral. Red = breaks a hard constraint (your call).
+    Resume links open the matching PDF in this folder.
+  </div>
+
+  <div id="cards"></div>
+
+  <div class="foot">
+    Biggest lever from here: referrals. Export your LinkedIn connections (Settings &rarr; Data privacy &rarr; Get a copy of your data &rarr; Connections) and the system can map warm paths into these companies.
+  </div>
+</div>
+
+<script>
+// ---- Your details (EDIT THESE) ----------------------------------------
+// These render as copy-paste chips at the top so you can fill ATS fields fast.
+const GLOBAL = [
+  ["Name","[Your Name]"],
+  ["Email","you@example.com"],
+  ["Phone","(555) 555-0100"],
+  ["Location","City, ST (Open to Remote)"],
+  ["LinkedIn","https://www.linkedin.com/in/your-handle/"],
+  ["GitHub","https://github.com/your-handle"],
+  ["Years of experience","N years"],
+  ["Work authorization","Eligible to work in the U.S. with no restrictions"],
+  ["Desired comp","$XXX,XXX+"],
+  ["Remote","Fully remote preferred"],
+];
+
+// ---- Roles (EDIT THESE) -----------------------------------------------
+// Two EXAMPLE cards. Add one object per role you tailor. Each card auto-renders
+// Apply + Resume (+ optional Cover letter) buttons and copy buttons for the
+// summary and "why" blurbs. `resume`/`cover` are filenames in this folder.
+//   tier: "good" | "warn" | "bad"   (controls the badge color)
+const ROLES = [
+  {
+    company:"Example Co", role:"Senior Product Manager, AI",
+    apply:"https://example.com/jobs/123", resume:"Jane Rivera - Example Co.pdf",
+    comp:"$160k–$200k", remote:"US remote",
+    tier:"good", tierLabel:"Clean fit",
+    summary:"Product manager with N years building AI-powered software in regulated, high-stakes domains. I work hands-on with the AI, from strategy through the evaluation framework and guardrails that keep it reliable in production. I shipped X that improved Y by Z%, and I own roadmaps end to end.",
+    why:"Example Co is building AI agents into a real product, and this role owns exactly what I do well: strategy, evaluation frameworks, and the guardrails that keep an agent reliable in production. I shipped a production AI product and built the eval framework behind it, so I can move fast on quality and reliability from day one.",
+    cons:["Clean fit on the stated seniority requirement.","Talking points to prep: a named capability in the JD I haven't shipped directly.","Domain is new to me, but the regulated-environment overlap is real."],
+    framing:"Resume framing: lead with AI product ownership. JD keyword coverage ~80%."
+  },
+  {
+    company:"Second Example", role:"Product Manager, Platform",
+    apply:"https://example.com/jobs/456", resume:"Jane Rivera - Second Example.pdf",
+    cover:"Jane Rivera - Cover Letter - Second Example.pdf",
+    comp:"$150k–$190k", remote:"Remote US",
+    tier:"warn", tierLabel:"Reach (referral helps)",
+    summary:"Product manager with N years on technically complex, regulated platforms. I own the platform layer end to end: I architected a data pipeline, consolidated legacy systems into one platform, and shipped AI on top with the reliability scaffolding to run it in production.",
+    why:"This role owns the platform that connects models to real workflows. I've spent years on the platform layer and shipped AI on top with the reliability scaffolding to run it in production. That's the shape of this job.",
+    cons:["Stated years sit slightly above mine; sell seniority through scope, not tenure.","Biggest gap: a specific titled ownership the JD asks for. A referral vouching for depth helps most here.","Strong content fit on platform and AI."],
+    framing:"Resume framing: lead with platform + AI. JD coverage ~75%. Referral recommended."
+  },
+];
+
+function flash(btn){const t=btn.textContent;btn.textContent="Copied";btn.classList.add("ok");
+  setTimeout(()=>{btn.textContent=t;btn.classList.remove("ok")},1100)}
+function copyStr(str,btn){
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(str).then(()=>flash(btn)).catch(()=>legacy(str,btn));
+  } else legacy(str,btn);
+}
+function legacy(str,btn){const ta=document.createElement("textarea");ta.value=str;
+  ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand("copy");flash(btn);}catch(e){}document.body.removeChild(ta);}
+function copyFrom(btn){const t=btn.closest(".field").querySelector(".copytext").textContent;copyStr(t,btn);}
+
+// globals bar
+document.getElementById("globals").innerHTML = GLOBAL.map(([k,v])=>
+  `<div class="chip"><span>${k}:</span><b>${v}</b><button class="copy" onclick="copyStr(${JSON.stringify(v)},this)">Copy</button></div>`
+).join("");
+
+// cards
+function field(label,text){
+  return `<div class="field"><div class="field-head"><span class="label">${label}</span>
+    <button class="copy" onclick="copyFrom(this)">Copy</button></div>
+    <div class="copytext">${text}</div></div>`;
+}
+document.getElementById("cards").innerHTML = ROLES.map(r=>`
+  <div class="card">
+    <div class="card-top">
+      <div>
+        <h2>${r.company}</h2>
+        <div class="role">${r.role}</div>
+        <div class="badges">
+          <span class="badge ${r.tier}">${r.tierLabel}</span>
+          <span class="badge">${r.comp}</span>
+          <span class="badge">${r.remote}</span>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn apply" href="${r.apply}" target="_blank" rel="noopener">Apply</a>
+        <a class="btn resume" href="${encodeURI(r.resume)}" target="_blank" rel="noopener">Resume</a>
+        ${r.cover ? `<a class="btn resume" href="${encodeURI(r.cover)}" target="_blank" rel="noopener">Cover letter</a>` : ""}
+      </div>
+    </div>
+    ${field("Professional summary", r.summary)}
+    ${field("Why "+r.company, r.why)}
+    <div class="field">
+      <div class="field-head"><span class="label">Considerations</span></div>
+      <ul class="cons">${r.cons.map(c=>`<li>${c}</li>`).join("")}</ul>
+      <div class="framing">${r.framing}</div>
+    </div>
+  </div>
+`).join("");
+</script>
+</body>
+</html>

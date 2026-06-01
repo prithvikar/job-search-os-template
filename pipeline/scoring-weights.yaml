@@ -1,0 +1,6 @@
+w1_requirement_coverage: 0.30
+w2_domain_overlap: 0.20
+w3_seniority_match: 0.15
+w4_referral_reachability: 0.25
+penalty_unmet_hard: 0.40
+# updated by scripts/calibrate.py against app-tracker outcomes
