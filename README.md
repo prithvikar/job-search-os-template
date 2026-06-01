@@ -6,6 +6,12 @@ ledger, renders it to PDF, and tracks every application in a single dashboard. I
 not a content generator; it is a system for producing credible, verifiable applications
 and good referral coverage with a human in the loop on everything that gets sent.
 
+The output you actually work from is a single HTML dashboard. One card per role, each
+with the apply link, the tailored resume, copy-paste application fields, and a short
+considerations note. Applying becomes review-and-click.
+
+![The Job Search OS dashboard: one card per role with an apply link, the tailored resume, copy-paste fields, and a considerations note.](docs/dashboard.png)
+
 ## Philosophy
 
 Modern hiring is an adversarial environment: an ATS, an AI-text detector, and an
